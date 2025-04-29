@@ -17,6 +17,8 @@ num_iter = 100  # number of iterations for the optimization (100 is a good start
 beta = 3e-2  # regularization parameter (to be tuned based on noise level)
 num_nearest = 5  # number of nearest neighbors for the Bowsher gradient operator (to be tunes, sth between 3 - 15)
 
+track_cost = True
+
 # simulation parameters
 seed = 1
 noise_level = 0.5
@@ -97,8 +99,9 @@ step_size = 1.0 / L
 cost = np.zeros(num_iter, dtype=float)
 
 for i in range(num_iter):
-    cost[i] = cost_function(x)
-    print(i, cost[i])
+    if track_cost:
+        cost[i] = cost_function(x)
+        print(f"{i:03} {cost[i]:.4E}", end="\r")
     xnew = x - step_size * cost_function_gradient(x)
     xnew = xp.clip(xnew, 0, None)
 
@@ -108,6 +111,8 @@ for i in range(num_iter):
     x = xnew
     y = ynew
     t = tnew
+
+print()
 
 # %%
 # show results
@@ -120,13 +125,14 @@ if not isinstance(x, np.ndarray):
     mr = xp.asnumpy(mr)
 
 # loglog plot of cost function
-fig1, ax1 = plt.subplots(1, 1, figsize=(6, 3), layout="constrained")
-ax1.loglog(cost, "r-", label="cost function")
-ax1.set_xlim(1, None)
-ax1.set_xlabel("iteration")
-ax1.set_ylabel("cost function")
-ax1.set_title("Cost function")
-fig1.show()
+if track_cost:
+    fig1, ax1 = plt.subplots(1, 1, figsize=(6, 3), layout="constrained")
+    ax1.loglog(cost, "r-", label="cost function")
+    ax1.set_xlim(1, None)
+    ax1.set_xlabel("iteration")
+    ax1.set_ylabel("cost function")
+    ax1.set_title("Cost function")
+    fig1.show()
 
 
 vmax = 1.2 * float(pet_gt.max())
@@ -152,3 +158,5 @@ ax2[0, 2].set_title("denosied & deblurred PET", fontsize="medium")
 ax2[0, 3].set_title("sim. MR", fontsize="medium")
 
 fig2.show()
+
+plt.show()
